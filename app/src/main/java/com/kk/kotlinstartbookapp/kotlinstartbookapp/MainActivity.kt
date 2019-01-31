@@ -134,11 +134,59 @@ fun hoge(): Int {
 }
 
 // while, do-whileも記述できる
-// for文
+// for文: @でラベルを指定できラベルジャンプできる
 fun forPrac() {
     loop@for (x in list) {
         // break, continue
         // break@ラベル名, continue@ラベル名 でラベルへジャンプできる
         break@loop
     }
+}
+
+/**
+ * 第5章 関数
+ */
+// 以下のような1行での関数定義も可能
+fun succ(i: Int): Int = i + 1
+
+// デフォルト引数
+// 指定しておくと引数省略することもできる
+fun hello(name: String = "World"): String {
+    return "Hello $name"
+}
+
+// 可変長引数
+// varargを引数につけるだけで可変長になる
+fun sum(vararg ints: Int): Int {
+    var sum = 0
+    for (i in ints) {
+        sum += i
+    }
+    return sum
+}
+fun fuga() {
+    // 可変長引数メソッドはこんな感じで呼び出せる
+    var i = sum(1, 2, 3)
+}
+
+// 再帰呼び出し: 関数が自分自身を呼び出すこと
+fun sum(numbers: List<Long>): Long =
+        // リストが空の場合は0で返す
+        if (numbers.isEmpty()) 0
+        // リストの最初と先頭を落としたリストを合計する
+        // これを繰り返すことでリストの合計を求めることができる
+        else numbers.first() + sum(numbers.drop(1))
+
+// ローカル関数: 関数定義の中に別関数を入れることができる
+// 主にスコープを制限したいときに用いられる
+fun sumLocal(numbers: List<Long>): Long {
+    tailrec fun go(numbers: List<Long>, accumulator: Long): Long =
+            if (numbers.isEmpty()) accumulator
+            else go(numbers.drop(1), accumulator + numbers.first())
+    return go(numbers, 0)
+}
+
+// 結果を返さない関数
+// Unitで定義しておけば問題ない
+fun countUp(): Unit {
 }
