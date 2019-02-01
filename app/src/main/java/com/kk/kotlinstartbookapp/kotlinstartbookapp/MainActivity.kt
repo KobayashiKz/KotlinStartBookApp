@@ -190,3 +190,146 @@ fun sumLocal(numbers: List<Long>): Long {
 // Unitで定義しておけば問題ない
 fun countUp(): Unit {
 }
+
+/**
+ * 第6章 第1級オブジェクトとしての関数
+ */
+// 第1級オブジェクト: 関数のようにふるまう関数オブジェクト
+
+// 関数オブジェクト: 関数をオブジェクトのように扱える
+// ::を使用することで関数オブジェクトが取得できる
+// オブジェクトにパラメーターを指定するような感覚で関数オブジェクトに引数を渡せる
+fun square(i: Int): Int = i * i
+
+fun main(args: Array<String>) {
+    val functionObject = ::square
+    println(functionObject(5))
+}
+
+// 関数型
+// 関数オブジェクトにも型が存在する
+fun hogehoge() {
+    // (Int) -> Int が型になる
+    // (引数1, 引数2 ...) -> 戻り値
+    val functionObject: (Int) -> Int = ::square
+}
+
+// 高階関数: 関数の引数として与えたり、引数として返ることができる関数のこと
+// 関数の抽象化が可能である
+// 変数部分に関数を埋め込むことができるイメージ
+
+// 与えられた文字列の中で、Kが出てくるインデックス値を返す関数
+fun firstK(str: String): Int {
+    // tailrecで再帰呼び出し可能にする
+    tailrec fun go(str: String, index: Int): Int =
+            when {
+                str.isEmpty() -> -1
+                str.first().equals("K") -> index
+                else -> go(str.drop(1), index + 1)
+            }
+    return go(str, 0)
+}
+
+// 与えられた文字列の中で、最初に大文字がでてくるインデックス値
+fun firstUpper(str: String): Int {
+    tailrec fun go(str: String, index: Int): Int =
+            when {
+                str.isEmpty() -> -1
+                str.first().isUpperCase() -> index
+                else -> go(str.drop(1), index + 1)
+            }
+    return go(str, 0)
+}
+
+// firstK()とfirstUpper()の違いは、Kか大文字かの違いだけ.
+// 再利用できる形にできるとスマートになる
+
+// predicateは (Char) -> Boolean型の関数オブジェクト
+fun first(str: String, predicate: (Char) -> Boolean): Int {
+    tailrec fun go(str: String, index: Int): Int =
+            when {
+                str.isEmpty() -> -1
+                predicate(str.first()) -> index
+                else -> go(str.drop(1), index + 1)
+            }
+    return go(str, 0)
+}
+
+fun firstKfun(str: String): Int {
+    // (Char) -> Boolean 型の関数オブジェクトを作成
+    fun isK(c: Char): Boolean = c.equals("K")
+    // こんな形で関数を引数に与えたりすることができる
+    // 高階関数は抽象化できるため、便利ではあるが、使いこなすまでには慣れが必要な気がする
+    return first(str, ::isK)
+}
+
+fun firstUpperfun(str: String): Int {
+    fun isUpper(c: Char): Boolean = c.isUpperCase()
+    return first(str, ::isUpper)
+}
+
+
+
+// ラムダ式: 以下のように関数オブジェクトを直接変数に指定するコードのこと
+// = {} で囲う使い方をしている. returnの記載は不要
+// 変数で関数オブジェクトを宣言できる
+fun ramda() {
+    val square: (Int) -> Int = {
+        i: Int -> i * i
+    }
+
+    // 暗黙の変数itを使用することができる
+    val square2: (Int) -> Int = {
+        it * it
+    }
+}
+
+// ラムダ式と高階関数の組み合わせ
+fun firstWhiteSpace(str: String): Int {
+    val isWhiteSpace: (c: Char) -> Boolean = {
+        it.isWhitespace()
+    }
+    return first(str, isWhiteSpace)
+}
+
+fun firstWhiteSpaceNext(str: String): Int =
+        first(str, {it.isWhitespace()})
+
+// 構文糖衣: 上記のパターンが多いため、ラムダ式を引数リストの外に出すことができる
+fun firstWhiteSpaceRamda(str: String): Int =
+        first(str) {it.isWhitespace()}
+
+
+
+// クロージャ
+fun foo(): Int {
+    val a = 1
+    val b = 2
+    return a + b
+}
+
+fun bar(): Int {
+    val c = 3
+    return a + c
+}
+
+fun getCounter(): () -> Int {
+    var count = 0
+    return {
+        // ラムダ式で直接()->Int型を記載
+        count++
+    }
+}
+fun mainCloser(args: Array<String>) {
+    val counter1 = getCounter()
+    val counter2 = getCounter()
+    // counterにアクセスするたびに、関数オブジェクトが実行される
+    // counterでgetCounter()のcountにアクセスしている
+    // つまりgetCounter()のローカル変数にmainCloser()でアクセスできている
+    // このようにスコープで変数が扱える関数オブジェクトをクロージャと呼ぶ
+    println(counter1) // 0出力
+    println(counter1) // 1出力
+    println(counter2) // 0出力
+    println(counter1) // 2出力
+    println(counter2) // 1出力
+}
