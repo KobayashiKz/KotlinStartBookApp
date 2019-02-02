@@ -667,3 +667,167 @@ fun typePrec() {
 // Kotlinはデフォルトでpublic
 // クラスにおける可視性修飾子: public private protected internal
 
+
+/**
+ * 第10章 インターフェース
+ */
+// 単純なインターフェース
+interface Greeter {
+    // 抽象プロパティ. abstractはインターフェースの場合は省略される
+    val language: String
+    // 抽象メンバ
+    fun sayHello(target: String)
+    fun sayHello()
+}
+
+// インターフェースを実装
+// インターフェースであればいくつ実装しても問題ない
+class EnglishGreeter: Greeter {
+    override val language: String = "String"
+    override fun sayHello(target: String) {
+        println("Hello $target!")
+    }
+
+    override fun sayHello() {}
+}
+
+
+// デフォルト実装
+interface Foo {
+    fun execute()
+}
+
+interface Bar {
+    fun execute()
+}
+
+// 同一シグネチャのメソッドの実装は問題ない
+class FooBar: Foo, Bar {
+    override fun execute() {
+        println("FooBar")
+    }
+}
+
+interface Foo2 {
+    fun execute()
+}
+
+open class Superclass {
+    open fun execute() {
+        println("SuperClass")
+    }
+}
+
+// 同一シグネチャのインターフェースと抽象クラスからのオーバーライドも問題ない
+// 抽象クラスで処理が走っていても問題ない
+class FooSubclass(): Foo2, Superclass() {
+    override fun execute() {
+        // これも問題ない
+    }
+}
+
+interface Hoge {
+    fun execute() {
+        println("Hoge")
+    }
+}
+
+interface Fuga {
+    fun execute() {
+        println("Fuga")
+    }
+}
+
+// 実装元のどちらも同一シグネチャで処理が書かれている場合にはオーバーライドせざるを得ない
+class HogeFuga: Hoge, Fuga {
+    override fun execute() {
+        // Hogeクラスのexecute()を呼ぶことができる
+        // これでコンフリクトを回避する
+        super<Hoge>.execute()
+    }
+}
+
+
+// インターフェースの継承: 別のインターフェースを継承することができる
+interface Foo3 {
+    fun aaa()
+    fun bbb()
+}
+
+interface Bar3: Foo3 {
+    override fun aaa() {}
+    fun ccc()
+}
+
+class Baz: Bar3 {
+    override fun bbb() {}
+    override fun ccc() {}
+}
+
+
+// デリゲーション
+
+open class JapaneseGreeter: Greeter {
+    override val language: String = "Japanese"
+    override fun sayHello(target: String) {
+        println("こんにちは $target!")
+    }
+
+    override fun sayHello() {}
+}
+
+// JapaneseGreeterクラスを拡張したい
+
+class JapaneseGreeterWithRecording: JapaneseGreeter() {
+    private val _targets: MutableSet<String> = mutableSetOf()
+
+    val targets: Set<String>
+        get() = _targets
+
+    override fun sayHello(target: String) {
+        // ターゲットを_targetに保存しつつ出力をスーパークラスで行なっている
+        _targets += _targets
+        super.sayHello(target)
+    }
+}
+
+// 委譲: あるオブジェクトの仕事を別のオブジェクトに任せること
+// JapaneseGreeterの継承をやめてGreeteを継承するよう変更
+//
+class JapaneseGreeterWithRecordingIjo: Greeter {
+    override val language: String = ""
+
+    private val greeter: Greeter = JapaneseGreeter()
+
+    private val _targets: MutableSet<String> = mutableSetOf()
+
+    val targets: Set<String>
+        get() = _targets
+
+    override fun sayHello() {
+        // JapaneseGreeterのsayHello()に任せている
+        // 継承をさけて委譲することでスーパークラスの影響を受けなくて済む
+        greeter.sayHello()
+    }
+
+    override fun sayHello(target: String) {
+        _targets += target
+        greeter.sayHello(target)
+    }
+}
+
+// クラスデリゲーション: 簡単に委譲するための仕組み
+// プライマリコンストラクタでGreeterを受け取れるようにしている
+// by Greeter: 「Greeterインターフェースを実装するけど、オーバーライドしていないメンバはgreeterに委譲する」という意味
+// これによって必要な分だけオーバーライドすればよくなる
+class GreeterWithRecording(private val greeter: Greeter): Greeter by greeter {
+    private val _target: MutableSet<String> = mutableSetOf()
+
+    val target: Set<String>
+        get() = _target
+
+    override fun sayHello(target: String) {
+        _target += target
+        greeter.sayHello(target)
+    }
+}
