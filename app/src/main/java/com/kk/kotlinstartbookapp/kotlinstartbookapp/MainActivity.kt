@@ -333,3 +333,103 @@ fun mainCloser(args: Array<String>) {
     println(counter1) // 2出力
     println(counter2) // 1出力
 }
+
+
+// インライン関数: 引数の関数オブジェクトをコンパイル時にインライン転換される関数のこと
+// 要は、引数に関数をもつメソッドに使われる. マクロのようなもの
+// 使い方: アノテーションでinlineを付加するだけ
+// 高階関数は便利だけどコストが高くなりがち
+// ループ処理で高階関数を何回も使用する場合に有用で、コードは大きくなるがパフォーマンスは向上する
+fun log(debug: Boolean = true, message: () -> String) {
+    if (debug) {
+        println(message)
+    }
+
+    fun mainInline(args: Array<String>) {
+        log { "メッセージ出力される" }
+        log(false) { "メッセージ出力されない" }
+    }
+}
+
+// 上記のような高階関数にインライン関数を用いる
+inline fun logInline(debug: Boolean = true, message: () -> String) {
+    if (debug) {
+        print(message())
+    }
+}
+
+
+// 非ローカルリターン: ラムダ式内でreturnによるリターンが可能
+// inline展開する必要がある
+
+// まずはインライン関数とforEach
+inline fun forEach(str: String, f: (Char) -> Unit) {
+    for (c in str) {
+        // c: 引数Char
+        // f()により型変換を行なっている
+        f(c)
+    }
+}
+
+// 次はforEachと非ローカルリターン
+// 文字列内に数字が含まれているか否かをチェックする関数
+fun containsDigit(str: String): Boolean {
+    // ラムダ式を使用してforをまわす
+    forEach(str) {
+        // その中で非ローカルリターンを使用してリターンする
+        if (it.isDigit()) {
+            // 数字が見つかったら非ローカルリターンでただちにreturn
+            return true
+        }
+    }
+    return false
+}
+
+
+// ラベルへのリターン: 自身の処理から脱出したい場合に用いる
+fun containsDigitLabel(str: String): Boolean {
+    var result: Boolean = false
+    // ラムダ式直前でラベル指定
+    forEach(str) here@ {
+        if (it.isDigit()) {
+            result = true
+            return@here
+        }
+    }
+    return result
+}
+
+// 関数を指定してリターンすることもできる. リターン対象が推論できる場合に限る
+fun containDigitLabelFun(str: String): Boolean {
+    var result = false
+    forEach(str) {
+        if (it.isDigit()) {
+            result = true
+            // 関数名をラベル指定
+            return@forEach
+        }
+    }
+    return result
+}
+
+
+
+// 無名関数: ラムダ式のように関数オブジェクトを直接得る方法のもう一つが無名関数
+// 通常の関数とほとんど同じだが、名前を持たない特徴がある
+
+// 以下のラムダ式と無名関数をまとめて関数リテラルと呼ぶ
+fun fugafuga() {
+    // ラムダ式
+    val square1: (Int) -> Int = {i: Int ->
+        i * i
+    }
+
+    // 無名関数
+    // returnで返す. ラムダ式と違って非ローカルリターンができない
+    val square2: (Int) -> Int = fun(i: Int): Int {
+        return i * i
+    }
+
+    // 無名関数省略バージョン
+    val square3: (Int) -> Int = fun(i: Int) = i * i
+}
