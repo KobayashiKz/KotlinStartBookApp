@@ -621,3 +621,49 @@ class extensionProperty {
         println("I like Kotlin".wordCount)
     }
 }
+
+
+/**
+ * 第9章 継承と抽象クラス
+ */
+
+// スーパークラス
+// open修飾子をつけることで継承可能になる
+open class PersonEx(open val name: String) {
+    open fun introduceMyself() {
+        println("I am $name")
+    }
+}
+
+// サブクラス
+class Student(override val name: String, val id: Long): PersonEx(name) {
+
+    // メソッドのオーバーライド
+    override fun introduceMyself() {
+        super.introduceMyself()
+        println("I am $name(id: $id)")
+    }
+
+    // プライマリコンストラクタのようにメンバをオーバーライドすることもできる
+}
+
+
+// スーパータイプ: スーパークラスの型
+// サブタイプ: サブクラスの型
+fun typePrec() {
+    val person: PersonEx = Student("たろう", 456)
+    person.introduceMyself()
+}
+
+// Any
+// なにも継承していないクラスは、自動的にAnyクラスを継承している
+
+// 抽象クラス: メンバやメソッドのオーバーライドをサブクラスに強制することができる
+// Javaと変わらずabstract修飾子をつける
+
+// 可視性: KotlinもJavaと同様にパッケージによって名前空間を切る
+// パッケージをインポートするがAndroidStudioだと自動でインポートされるため特に意識しなくて良い
+// 可視性修飾子: public private protected
+// Kotlinはデフォルトでpublic
+// クラスにおける可視性修飾子: public private protected internal
+
