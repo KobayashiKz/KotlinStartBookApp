@@ -308,10 +308,10 @@ fun foo(): Int {
     return a + b
 }
 
-fun bar(): Int {
-    val c = 3
-    return a + c
-}
+//fun bar(): Int {
+//    val c = 3
+//    return a + c
+//}
 
 fun getCounter(): () -> Int {
     var count = 0
@@ -523,3 +523,101 @@ class BucketImpl(_capacity: Int) : BucketProperty {
     override var quantity: Int = 0
 }
 
+
+/**
+ * 第8章 クラスとそのメンバ
+ */
+class Myclass()
+
+fun mainClass(args: Array<String>) {
+    // クラスインスタンス生成
+    val myclass: Myclass = Myclass()
+    // もちろんメソッド,プロパティを定義できる
+    // バッキングフィールド: プロパティの内部で オブジェクト->変数->バッキングフィールドがある
+    // バッキングフィールドは自動的に生成される. プロパティはオブジェクトとバッキングフィールドの橋渡し
+}
+
+// バッキングフィールドをもたないプロパティも生成できる
+class Person {
+    var name: String = ""
+    var age: Int = 0
+    // バッキングフィールドをもたないプロパティ
+    // その代わりにカスタムゲッターを定義している
+    val nameLength: Int
+        get(): Int {
+            return this.name.length
+        }
+        // 省略表記
+//        get() = this.name.length
+}
+
+
+// バッキングフィールドを持つプロパティは初期化する必要がある
+// 初期化タイミングを遅らせるために、lateinitを使用する
+class MyClass {
+    // 初期化する前にfooにアクセスするとkotlin.UninitializedPropertyAccessExceptionが発生
+    lateinit var foo: String
+}
+
+
+// プライマリコンストラクタ
+class RationalConstructor constructor(n: Int, d: Int) {
+    val numerator: Int = n
+    val denominator: Int = d
+}
+
+// コンストラクタ引数をそのままプロパティに
+// constructorは省略可能
+class RationalConstructorProperty(val numerator: Int, val denominator: Int) {}
+
+
+// セカンダリコンストラクタ
+class RationalSecondery(val numerator: Int, val denominator: Int) {
+    // セカンダリコンストラクタでnumeratorのみ受け取り、denominatorは自動的に1にしている
+    // 引数リストの後に「:」を用いてプライマリコンストラクタを呼び出している
+    constructor(numerator: Int): this(numerator, 1)
+}
+
+
+// イニシャライザ: インスタンス生成した際に実施しておきたい処理を定義できる
+class RationalInitializa(val numerator: Int, val denominator: Int = 1) {
+    init {
+        // 要求に反した場合は例外をスローする
+        require(denominator != 0)
+    }
+}
+
+
+// エクステンション: 拡張関数と拡張プロパティのこと
+// Utilクラスなどで活躍しそう
+
+// 文字列を空白分解して得られた要素数をリターン
+fun countWord(word: String): Int = word.split("""\s+""".toRegex()).size
+
+fun call() {
+    countWord("I like Kotlin") // 3
+}
+
+// 拡張関数: 既存クラスに手を加えずに処理を加える方法
+// 拡張関数の定義方法
+fun String.countWords(): Int =
+        this.split("""\s+""".toRegex()).size
+
+// 拡張関数の呼び出し方
+// あたかもStringメソッドのように呼び出すことができる
+// レシーバ
+fun callExtension() {
+    "I like Kotlin".countWords()
+}
+
+// 拡張プロパティも定義できる
+class extensionProperty {
+    // 拡張プロパティ定義
+    val String.wordCount: Int
+        get() = split("""\s+""".toRegex()).size
+
+    fun main(args: Array<String>) {
+        // 拡張プロパティ呼び出し
+        println("I like Kotlin".wordCount)
+    }
+}
