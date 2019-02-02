@@ -831,3 +831,135 @@ class GreeterWithRecording(private val greeter: Greeter): Greeter by greeter {
         greeter.sayHello(target)
     }
 }
+
+
+/**
+ * 第11章 ジェネリクス
+ */
+
+// 中身を見る際にダウンキャストした場合にCrashする可能性あり
+// valueがIntなのにas Stringしてしまうなど
+class Container(var value: Any)
+
+// 型に特化した場合は安全だけど他の型に対応できない
+class IntContainer(var value: Int)
+class StringContainer(var value: String)
+
+// そこでジェネリクスが登場する
+// クラスは型パラメーター（<T>）をとることができる
+// このクラスをジェネリッククラスと呼ぶ
+class ContainerParameter<T>(var value: T)
+
+// 呼び出し側で型引数として与える
+// val container: ContainerParameter<Int> = ContainerParameter(1)
+
+
+// ジェネリック関数
+// Utilクラスなどで大活躍しそう
+class GenericFunction() {
+    // ジェネリック関数の定義例
+
+    fun <T> box(value: T) : ContainerParameter<T> = ContainerParameter(value)
+
+    val <T> T.string: String
+        get() = toString()
+}
+
+// ジェネリック制約
+// 上限境界制約の例
+interface HogeGene
+interface FugaGene
+class FooGene<T>
+// ジェネリクスクラスの型パラメーターは型で制限をかけることができる
+class BarGene<T: HogeGene>
+
+fun gene(args: Array<String>) {
+    FooGene<HogeGene>()
+    FooGene<FugaGene>()
+
+    BarGene<HogeGene>()
+//    BarGene<FugaGene>() // NG
+}
+
+// 複数の上限を設定する場合はwhereを使用する
+interface Piyo: HogeGene, FugaGene
+// whereで複数設定できる
+class Bazz<T> where T: HogeGene, T: FugaGene
+
+fun mainGene(args: Array<String>) {
+    Bazz<Piyo>()
+}
+
+
+// 変位指定
+// ジェネリクスには変位と呼ばれる特性がある
+// 変位には、不変・共変・反変の3種類がある. デフォルトは不変
+// 不変: Container(String)とContainer(CharSequence)の双方にサブタイプの関係が成り立たないこと
+// 不変の場合は柔軟性にかける欠点がある
+fun fuhen() {
+    val a: ContainerParameter<String> = ContainerParameter("Hello")
+//    val b: ContainerParameter<CharSequence> = a // error
+}
+
+// Container<Int>などのように指定できず、不変だとあまり役に立たないメソッドになる
+fun show(container: ContainerParameter<Any>) {
+    println(container.toString())
+    println(container.hashCode())
+    println(container.value)
+}
+
+// そこで型投影が登場する
+// 型投影: 型を投影して可能な操作を制限することでジェネリックの変位を指定できる
+// 共変: Container<String>がContainer<CharSequence>のサブタイプとなること
+// 共変にはout修飾子を使用する
+
+fun showKyohen(container: ContainerParameter<out Any>) {
+    println(container.toString())
+    println(container.hashCode())
+    println(container.value)
+}
+
+fun kyohen() {
+    val a: ContainerParameter<String> = ContainerParameter("Hello")
+    // 共変によって代入できるようになっている
+    val b: ContainerParameter<out Any> = a
+//    b.value = 123 // 共変していることによってコンパイルエラーが発生する
+    // 本来NGの操作なので、型投影によって操作制限させることができているのである
+}
+
+// 反変: Container<String>がContainer<CharSequence>のスーパータイプとなる性質のこと
+// 型投影によって制限される操作は、指定した型パラメーターに対応する値の読み取り
+// in修飾子を使用する
+class ContainerHan<T>(var value: T) {
+    // 自分の持っている値を他のContainerオブジェクトにコピーするメソッド
+    fun copyTo(to: ContainerHan<in T>) {
+        // inはoutと異なり値の変更が可能
+        to.value = value
+    }
+}
+
+fun han() {
+    val a: ContainerHan<Int> = ContainerHan(15)
+    val b: ContainerHan<Number> = ContainerHan(0)
+    // 反変によってコピーすることができる
+    a.copyTo(b)
+    // outと同じように値の読み取りを行うことができる
+    // ただしAny?クラスになることに注意しなければならない
+    println(b.value)
+}
+
+// 共変: 書き換え不可、値の出力専用. Container<Any>.toString()などの出力を行いたい場合
+// 反変: 値の入力専用、出力はAny?型になる. Container<String>に他のContainer<Int>などの値の一部を入れてあげたい場合
+
+
+// スター投影: 型パラメーターに無関心でいたい時に使用する
+// 対象の型パラメーターに対応するオブジェクトの変更ができなくなり、取得時にはAny?型になる
+// 共変と反変のできないことを組み合わせた状態になる
+fun star() {
+    // 型パラメーターに*を指定
+    val a: ContainerParameter<*> = ContainerParameter<Int>(5)
+    val b: ContainerParameter<*> = ContainerParameter<String>("abc")
+}
+
+// 具象型: 型引数をランタイムで保持することができる
+
