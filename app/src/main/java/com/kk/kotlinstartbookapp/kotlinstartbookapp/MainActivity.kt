@@ -433,3 +433,93 @@ fun fugafuga() {
     // 無名関数省略バージョン
     val square3: (Int) -> Int = fun(i: Int) = i * i
 }
+
+
+/**
+ * 第7章 オブジェクトからクラスへ
+ */
+
+// オブジェクトの生成: object{}で生成できる
+fun mainObject(args: Array<String>) {
+
+    // バケツオブジェクト
+    // オブジェクト式
+    val bucket = object {
+        // バケツの容量
+        val capacity: Int = 5
+        // 水の量
+        var quentity: Int = 0
+
+        // バケツを水で満たす
+        fun fill() {
+            quentity = capacity
+        }
+
+        // 排水する
+        fun drainAway() {
+            quentity = 0
+        }
+
+        // 入っている水の量を出力する
+        fun printQuentity() {
+            println(quentity)
+        }
+    }
+
+    bucket.printQuentity() //0
+    bucket.fill()
+    bucket.printQuentity() //5
+    bucket.drainAway()
+    bucket.printQuentity() //0
+}
+
+
+// インターフェース: バケツオブジェクトに型を与えるためにインターフェースを実装する
+// オブジェクトはインターフェース実装できるので、ほとんどクラスと変わらないイメージ
+interface Bucket {
+    fun fill()
+    fun drawAnyway()
+    fun pourTo(that: Bucket)
+
+    fun getCapacity(): Int
+    fun getQuantity(): Int
+    fun setQuautity(quantity: Int)
+}
+
+fun mainInterface(args: Array<String>) {
+    // Bucketインターフェースを実装する
+    val bucket = object: Bucket {
+        override fun fill() {}
+        override fun drawAnyway() {}
+        override fun pourTo(that: Bucket) {}
+        override fun getCapacity(): Int {return 5}
+        override fun getQuantity(): Int {return 0}
+        override fun setQuautity(quantity: Int) {}
+    }
+}
+
+
+// プロパティ
+interface BucketProperty {
+    // プロパティ. 変数のようにデータの持ち方は定義しない
+    val capacity: Int
+    var quantity: Int
+}
+
+fun mainProperty(args: Array<String>) {
+    fun createBucket() = object : BucketProperty {
+        // 定義したインターフェースのプロパティもoverrideする
+        override val capacity: Int = 0
+        override var quantity: Int = 0
+    }
+}
+
+
+// クラス: クラスはオブジェクトの設計図であると例えられる
+// オブジェクトと違い、コンストラクタを定義することができる
+// クラスを用いると簡単にオブジェクトを生成することができる
+class BucketImpl(_capacity: Int) : BucketProperty {
+    override val capacity: Int = _capacity
+    override var quantity: Int = 0
+}
+
