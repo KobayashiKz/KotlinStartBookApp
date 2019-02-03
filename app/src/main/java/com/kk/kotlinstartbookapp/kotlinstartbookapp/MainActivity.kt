@@ -963,3 +963,94 @@ fun star() {
 
 // 具象型: 型引数をランタイムで保持することができる
 
+
+/**
+ * 第12章 Null安全
+ */
+
+// デリファレンス: 変数などが参照しているオブジェクトを取得すること
+// ある参照をデリファレンスした時に、その参照がnullだったらNPEが発生する
+// 例: String s = null; s.toUpperCase(); など
+
+// スマートキャスト: 対象の型へのキャストが安全であることが確認できるとき、自動的にキャストされるような機能
+// 以下ではNullableな変数がNotNullだとわかったときだけ、NotNullの振る舞いを行えるというメソッド
+fun smartCast() {
+    val a: String? = null
+    val b: String? = "Hello"
+
+    if (a != null) {
+        println(a.toUpperCase())
+    }
+    if (b != null) {
+        println(b.toUpperCase())
+    }
+
+    val list: List<Any> = listOf(1, "a", false)
+    for (e in list){
+        val result: Any? = when (e) {
+            is Int -> e + 5
+            is String -> e.toUpperCase()
+            is Boolean -> e.not()
+            else -> null
+        }
+    }
+}
+
+
+// 安全呼び出し
+// nullであればnullを返すだけ
+fun nullReturn() {
+    val a: Int? = 5
+    val aInt: Int? =
+            if (a != null) a.inc()
+            else null
+
+    // 上記の文は安全呼び出しでありKotlinでは以下のように記述できる
+    val aIntSafe: Int? = a?.inc()
+}
+
+// 安全呼び出しはオブジェクトのメンバ呼び出しのときのみ有効
+// NotNullな変数を引数にとる関数にNullableを引数を渡す時には一手間かかる
+fun squareSafe() {
+    fun square(i: Int): Int = i * i
+
+    val a: Int? = 5
+    val aSquare =
+            if (a != null) square(a)
+            else null
+}
+
+// 上記のメソッドの引数にNonNullの変数を渡す場合はletを使用できる
+// letは任意の型Tに対する拡張関数.
+// (T) -> R という拡張関数に対して、letのレシーバとなるオブジェクトを引数に渡している
+public inline fun<T, R> T.let(block: (T) -> R): R = block(this)
+
+// 上記のletと安全呼び出しを組み合わせるとスッキリする
+fun letSafeCall() {
+    fun square(i: Int): Int = i * i
+    val a: Int? = 5
+
+    // もし変数aがnullであったらletは実行されずにnullが返るだけ
+    // aがnullでなければ、拡張関数letが実行される
+    // letの関数オブジェクトの引数itを引数に渡している
+    // そのためsquare()にaを渡すことになる(notnull)
+    // ちなみにa?.let(::square)のように直接渡すこともできる
+    val aSquare = a?.let { square(it) }
+}
+
+// !!でNotNullを作り出すことができる
+// ただしデリファレンスした結果Nullだった場合にはNPEが発生する
+
+// エルビス演算子: nullでなければそれを使用し、nullの場合はデフォルト値を使用する場合に便利
+// "?: [デフォルト値]"を記載する
+// エルビス演算子は普段でも便利な気がする
+fun elubis() {
+    val foo: String? = "Hello"
+    foo ?: "default".toUpperCase()
+}
+
+
+// 安全キャスト
+// asの代わりにas?を使用する. ダウンキャストする際に失敗したら例外をスローするのでなくnullを返す
+
+// Javaも含まれている場合だとNullの扱いは要注意となる
