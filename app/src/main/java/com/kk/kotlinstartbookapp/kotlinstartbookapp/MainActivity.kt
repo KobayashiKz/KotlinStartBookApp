@@ -2,6 +2,7 @@ package com.kk.kotlinstartbookapp.kotlinstartbookapp
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import kotlin.reflect.KProperty
 
 class MainActivity : AppCompatActivity() {
 
@@ -1054,3 +1055,228 @@ fun elubis() {
 // asの代わりにas?を使用する. ダウンキャストする際に失敗したら例外をスローするのでなくnullを返す
 
 // Javaも含まれている場合だとNullの扱いは要注意となる
+
+
+/**
+ * 第13章 その他の話題
+ */
+
+// 演算子オーバーロード: 演算子を任意のオブジェクトで使用できる
+fun operatorOverload() {
+    // 足し算
+    val a = 1 + 2
+    val b = 1.plus(2)
+
+    // 掛け算
+    var c: Int = 1 * 2
+    val d: Int = 1.times(2)
+
+    // インクリメント
+    c++
+    d.inc()
+
+    // などなど演算子オーバーロードには様々な種類がある
+}
+fun function() {}
+
+
+// 等価性: 2つの参照が等価であるかどうか
+// === を用いる
+fun equalNature() {
+    val a = setOf<Int>(1)
+    val b = a
+    // true
+    if (a === b) {}
+
+    a === setOf(1) // false
+    b !== setOf(1) // true
+    a === null // false
+    null === null // true
+}
+
+// 2つのオブジェクトの構造上の等価性をチェックする場合には == を使用する
+fun check() {
+    val a: Int? = 2
+    val b: Int? = 3
+
+    // エルビス演算子も使用している
+    val c = a?.equals(b) ?: (b === null)
+}
+
+
+// 中置呼び出し: メソッドの呼び出しが組み込みの命令のように見える記法
+fun middle() {
+    // 左シフト
+    5 shl 2
+    // 符号なし右シフト
+    0b1010 ushr 1
+    // and演算子
+    true and false
+    // xor演算子
+    true xor false
+}
+
+
+// 分解宣言: オブジェクトを分解して複数の変数にデータを代入する機能
+fun bunkai() {
+    val pair: Pair = Pair("taro", 27)
+    pair.first()
+    pair.second()
+
+    // 分解宣言すると,(Pairクラスにdataをつける必要ある)
+    val (name, age) = Pair("ziro", 26)
+    println(name)
+    println(age)
+}
+
+data class Pair(val name: String, val age: Int) {
+    fun first(): String {
+        return name
+    }
+
+    fun second(): Int {
+        return age
+    }
+}
+
+
+// データクラス: データを持つために作られたクラスのこと
+// classにdata演算子をつけるだけ
+// toStringやequal, hashcodeなどの実装が手に入る
+data class User(val id: Long, val name: String) {
+}
+
+fun dataClass() {
+    val taro: User = User(1, "taro")
+    val newTaro = taro.copy()
+    val hash = taro.hashCode()
+    val str = taro.toString()
+}
+
+
+// ネストしたクラス: インナークラス
+// 内側のクラスへのアクセスは, 外側クラス名.内側クラス名 でアクセスできる
+data class Personal(val id: Long, val name: String) {
+    data class Id(val value: Long)
+
+    // 内部クラスと単なるクラスを識別するためにinnerをつけることもある
+    inner class Name(val name: String)
+}
+
+
+// オブジェクト式: オブジェクトリテラル
+fun hoge3() {
+    // 継承するクラスや実装するインターフェースの定義も可能
+    val myObject = object {}
+}
+
+
+// オブジェクト宣言: シングルトンなクラスを生成したい場合に使用する
+// classに変わってobjectを使用するだけ
+interface Greeter2 {
+    fun greet(name: String)
+}
+
+object JapaneseGreeter2: Greeter2 {
+    override fun greet(name: String) {
+        // do nothing.
+    }
+}
+
+
+// コンパニオンオブジェクト: 外から直接アクセスできる. クラス内に1つしか定義できない
+class compa() {
+    companion object {
+        val dummy = 1
+    }
+}
+
+fun callEx() {
+    compa.dummy
+}
+
+
+// 代数的データ型: 直和型/列挙型の2つ
+// 直和型:
+class tyo() {
+    // 型パラメーターが共変
+    interface MyList<out T>
+
+    // 空のリストを表現するシングルトンオブジェクト
+    object Nil: MyList<Nothing> {
+        override fun toString(): String = "Nil"
+    }
+
+    class Cons<T>(val head: T, val tail: MyList<T>): MyList<T> {
+        override fun toString(): String = "$head:$tail"
+    }
+}
+
+// シールドクラス: そのクラスの継承可能な範囲を宣言するようなクラス
+// 修飾子sealedを使用する
+// このクラスは他のクラスから継承できなくなる
+sealed class SealdClass<out T> {
+    interface MyList<out T>
+
+    object Nil: MyList<Nothing> {
+        override fun toString(): String = "Nil"
+    }
+    class Cons<T>(val head: T, val tail: MyList<T>): MyList<T> {
+        override fun toString(): String = "$head:$tail"
+    }
+}
+
+
+// 列挙型
+enum class DrinkSizeType {
+    SMALL,
+    MEDIUM,
+    LARGE
+}
+
+enum class SizeType(val millilitter: Int) {
+    SMALL(300),
+    MEDIUM(500),
+    LARGE(700)
+}
+
+fun callEnum() {
+    DrinkSizeType.LARGE
+    SizeType.SMALL.millilitter // 300
+}
+
+
+// 例外: try-catchによる例外キャッチは義務付けられていない
+// 以下のように関数を定義しても特に問題ない
+class MyException(message: String): Exception(message)
+fun th() {
+    throw MyException("例外発生")
+}
+
+// try-catch-finallyも可能
+
+
+// 委譲のプロパティ: プロパティにアクセスがあった際にその後の処理を別のオブジェクトに委譲する
+// by に続くオブジェクトに処理を委譲する
+class ijouProperty {
+    var _str: String? = null
+    var str: String? by object {
+        operator fun getValue(thisRef: ijouProperty,
+                              property: KProperty<*>): String? {
+            println("${property.name}がgetされました")
+            return _str
+        }
+
+        operator fun setValue(thisRef: ijouProperty,
+                              property: KProperty<*>, value: String?) {
+            println("${property.name}がsetされました")
+            _str = value
+        }
+    }
+}
+
+// ijouProperty.str をすると、[...がgetされました]が出力される
+
+
+// アノテーション: 公式ドキュメント参照
+// Javaのアノテーションも同じように使うことができる
