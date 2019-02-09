@@ -18,3 +18,18 @@ Kotlinスタートブックメモ
 ・プリミティブ型int,charなどがJavaと異なり、Kotlinには存在しない
 ・プロパティやオブジェクト宣言などJavaにない機能があったりする
 6. 関数型プログラミング
+
+
+■ ライブデータのライブラリ
+1. Kotter Knife
+  ・サードパーティー製ライブラリ
+2. Kotlin Android Extensions
+  ・IDを委譲プロパティに記述していく. この作業を解消してくれる
+  ・敷居は低い
+3. Data Binding
+  ・Google公式
+  ・レイアウトとコード間のデータをバインディングしてくれる
+4. Anko
+  ・JetBrains製
+  ・XMLでなくコード(Kotlin DSL)でレイアウトを構築していく
+  ・AnkoDSLプレビューでレイアウトを見れる
